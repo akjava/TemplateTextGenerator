@@ -1,0 +1,10 @@
+##MULTI,true
+##INPUT,1
+##FILENAME,test.txt
+##HEADER
+hello
+hello
+##FOOTER
+foot toot
+##ROW
+rowrow
