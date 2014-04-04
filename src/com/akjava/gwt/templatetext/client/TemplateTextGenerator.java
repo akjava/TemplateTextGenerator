@@ -12,6 +12,7 @@ import com.akjava.gwt.html5.client.file.webkit.FilePathCallback;
 import com.akjava.gwt.html5.client.file.webkit.Item;
 import com.akjava.gwt.lib.client.LogUtils;
 import com.akjava.gwt.lib.client.StorageControler;
+import com.akjava.gwt.lib.client.StorageDataList;
 import com.akjava.gwt.lib.client.StorageException;
 import com.akjava.gwt.lib.client.widget.PasteValueReceiveArea;
 import com.akjava.gwt.lib.client.widget.TabInputableTextArea;
@@ -67,6 +68,7 @@ public class TemplateTextGenerator implements EntryPoint {
 	private CellList<FileNameAndText> cellList;
 	private CheckBox multiCheck;
 	VerticalPanel downloadLinks=new VerticalPanel();
+	private TemplateDataList templateDataList;
 	public void onModuleLoad() {
 		HorizontalPanel root=new HorizontalPanel();
 		RootPanel.get().add(root);
@@ -125,6 +127,10 @@ public class TemplateTextGenerator implements EntryPoint {
 					 doConvert();
 			    }});
 		
+		 
+		 templateDataList = new TemplateDataList(new StorageDataList(storageControler,"templateText"),this);
+		 
+		 root.add(templateDataList.getSimpleDataListWidget());
 		
 	}
 	private void createRightPanels(Panel parentPanel) {
@@ -165,6 +171,17 @@ public class TemplateTextGenerator implements EntryPoint {
 		templateArea.setSize("600px","450px");
 		tab.add(templatePanel,"Template");
 		tab.selectTab(0);
+		
+		VerticalPanel helps=new VerticalPanel();
+		parentPanel.add(helps);
+		helps.add(new Label("${value}:normal"));
+		helps.add(new Label("${u+value}:upper camel"));
+		helps.add(new Label("${l+value}:lower camel"));
+		helps.add(new Label("${U+value}:upper case"));
+		helps.add(new Label("${L+value}:upper case"));
+		helps.add(new Label("${name+value}:name only of fileName"));
+		helps.add(new Label("${ext+value}: ext only of fileName"));
+		helps.add(new Label("${_+value}: replace ' ' & '-' to underbar"));
 	}
 	private void createLeftPanels(Panel parentPanel){
 		//copy paste box
@@ -306,7 +323,10 @@ public class TemplateTextGenerator implements EntryPoint {
 					});
 		}
 	}
-	protected void loadTemplateText(String text) {
+	public String getText(){
+		return templateArea.getText();
+	}
+	public void loadTemplateText(String text) {
 		if(text==null || text.isEmpty()){
 			return;
 		}
@@ -370,6 +390,15 @@ public class TemplateTextGenerator implements EntryPoint {
 			LogUtils.log(e.getMessage());
 		}
 
+		if(templateDataList.getSimpleDataListWidget().getSelection()!=null){
+		String old=templateDataList.getSimpleDataListWidget().getSelection().getData().getData();
+		if(!old.equals(templateArea.getText())){
+			templateDataList.getSimpleDataListWidget().getSelection().getData().setData(templateArea.getText());
+			templateDataList.getSimpleDataListWidget().setModified(true);
+		}
+		
+		}
+		
 	}
 	private void setOutputText(String text) {
 		outputArea.setText(text);
