@@ -20,7 +20,7 @@ public class TemplateConverter {
 		if(multiple){
 			return convertAsLineMulti(header, footer, row, input,fileName);
 		}else{
-			FileNameAndText fn=convertAsLineSingle(header, footer, row, input,fileName);
+			FileNameAndText fn=convertAsLineSingle(header, footer, row, input,"");
 			if(fn==null){
 				return new ArrayList<FileNameAndText>();
 			}else{
@@ -33,7 +33,7 @@ public class TemplateConverter {
 		if(multiple){
 			return convertAsPairMulti(header, footer, row, input,fileName);
 		}else{
-			FileNameAndText fn=convertAsPairSingle(header, footer, row, input,fileName);
+			FileNameAndText fn=convertAsPairSingle(header, footer, row, input,"");
 			if(fn==null){
 				return new ArrayList<FileNameAndText>();
 			}else{
@@ -46,7 +46,7 @@ public class TemplateConverter {
 		if(multiple){
 			return convertAsFirstKeyMulti(header, footer, row, input,fileName);
 		}else{
-			FileNameAndText fn=convertAsFirstKeySingle(header, footer, row, input,fileName);
+			FileNameAndText fn=convertAsFirstKeySingle(header, footer, row, input,"");
 			if(fn==null){
 				return new ArrayList<FileNameAndText>();
 			}else{
@@ -109,8 +109,9 @@ public class TemplateConverter {
 		}
 		List<FileNameAndText> result=new ArrayList<FileNameAndText>();
 		String[] lines=CSVUtils.splitLines(input);
-		Map<String,String> map=new HashMap<String, String>();
+		
 		for(String line:lines){
+			Map<String,String> map=new HashMap<String, String>();
 			if(line.isEmpty()){
 				continue;
 			}

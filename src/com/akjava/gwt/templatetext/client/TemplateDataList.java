@@ -58,6 +58,7 @@ private FileUploadForm uploadForm;
 		if(hv.isPresent()){
 			LogUtils.log(hv.get().getData());
 			generator.loadTemplateText(hv.get().getData());
+			generator.doConvert();
 		}
 	}
 

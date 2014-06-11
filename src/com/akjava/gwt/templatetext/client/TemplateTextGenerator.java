@@ -40,6 +40,7 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -95,6 +96,9 @@ public class TemplateTextGenerator implements EntryPoint {
 		 
 		 FileNameAndTextCell cell=new FileNameAndTextCell();
 		 cellList = new CellList<FileNameAndText>(cell);
+		
+		 cellListProvider.addDataDisplay(cellList);
+		
 		 cellList.setPageSize(900);
 		 scroll.setWidget(cellList);
 		 centerVertical.add(scroll);
@@ -139,7 +143,19 @@ public class TemplateTextGenerator implements EntryPoint {
 		
 		VerticalPanel outputPanel=new VerticalPanel();
 		outputPanel.add(downloadLinks);
+		HorizontalPanel buttonPanel=new HorizontalPanel();
+		buttonPanel.setWidth("100%");
+		buttonPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
+		Button selectAll=new Button("Select All Text",new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				outputArea.selectAll();
+			}
+		});
+		buttonPanel.add(selectAll);
+		outputPanel.add(buttonPanel);
 		outputArea = new TextArea();
+		outputArea.setReadOnly(true);
 		outputArea.setSize("600px","450px");
 		outputPanel.add(outputArea);
 		tab.add(outputPanel,"Output");
@@ -169,11 +185,13 @@ public class TemplateTextGenerator implements EntryPoint {
 		});
 		templateArea.setReadOnly(true);
 		templateArea.setSize("600px","450px");
-		tab.add(templatePanel,"Template");
+		tab.add(templatePanel,"Loaded Template");
 		tab.selectTab(0);
 		
 		VerticalPanel helps=new VerticalPanel();
+		helps.setSpacing(8);
 		parentPanel.add(helps);
+		helps.add(new Label("Tips"));
 		helps.add(new Label("${value}:normal"));
 		helps.add(new Label("${u+value}:upper camel"));
 		helps.add(new Label("${l+value}:lower camel"));
@@ -183,11 +201,14 @@ public class TemplateTextGenerator implements EntryPoint {
 		helps.add(new Label("${ext+value}: ext only of fileName"));
 		helps.add(new Label("${_+value}: replace ' ' & '-' to underbar"));
 	}
+	private String appName="TemplateTextGenerator";
+	private String version="v1.0";
 	private void createLeftPanels(Panel parentPanel){
 		//copy paste box
 		PasteValueReceiveArea pasteArea=new PasteValueReceiveArea();
-		 pasteArea.setStylePrimaryName("readonly");
-		 pasteArea.setText("Click(Focus) & Paste Here");
+		 pasteArea.setStylePrimaryName("clipbg");
+		// pasteArea.setStylePrimaryName("readonly");
+		 pasteArea.setText(appName+" "+version+"\n-- Clipboard Receiver -- \nClick(Focus) & Paste Template-Text Here");
 		 parentPanel.add(pasteArea);
 		 pasteArea.setSize("600px", "60px");
 		 pasteArea.setFocus(true);
@@ -202,8 +223,9 @@ public class TemplateTextGenerator implements EntryPoint {
 		 
 		//file name box
 		HorizontalPanel fileNamesPanel=new HorizontalPanel();
+		fileNamesPanel.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
 		parentPanel.add(fileNamesPanel);
-		fileNamesPanel.add(new Label("FileName"));
+		fileNamesPanel.add(new Label("FileName Template"));
 		fileNameBox = new TextBox();
 		fileNameBox.setWidth("250px");
 		fileNamesPanel.add(fileNameBox);
@@ -211,17 +233,17 @@ public class TemplateTextGenerator implements EntryPoint {
 		
 		headerArea = new TextArea();
 		headerArea.setSize("600px","150px");
-		parentPanel.add(new Label("Header"));
+		parentPanel.add(new Label("Header Template"));
 		parentPanel.add(headerArea);
 		
 		rowArea = new TextArea();
 		rowArea.setSize("600px","150px");
-		parentPanel.add(new Label("Row/Body"));
+		parentPanel.add(new Label("Row/Body Template"));
 		parentPanel.add(rowArea);
 		
 		footerArea = new TextArea();
 		footerArea.setSize("600px","150px");
-		parentPanel.add(new Label("Footer"));
+		parentPanel.add(new Label("Footer Template"));
 		parentPanel.add(footerArea);
 		
 		
@@ -245,11 +267,11 @@ public class TemplateTextGenerator implements EntryPoint {
 		 singleBt.setValue(true);
 		 
 		 pairBt = new RadioButton("type");
-		 pairBt.setText("key and value pair");
+		 pairBt.setText("key and value pair line(tab-sv)");
 		 hpanel.add(pairBt);
 		 
 		 firstBt = new RadioButton("type");
-		 firstBt.setText("First line use as Key");
+		 firstBt.setText("First line column use as Key(tab-sv)");
 		 hpanel.add(firstBt);
 		 
 		 inputArea = new TabInputableTextArea();
@@ -261,9 +283,19 @@ public class TemplateTextGenerator implements EntryPoint {
 		 parentPanel.add(new Label("Output"));
 		 HorizontalPanel hpanel2=new HorizontalPanel();
 		 parentPanel.add(hpanel2);
-		 multiCheck = new CheckBox("multi");
+		 multiCheck = new CheckBox("multiple output file or merged single text(No effect FileName)");
+		 multiCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				fileNameBox.setEnabled(event.getValue());
+			}
+			 
+		});
 		 hpanel2.add(multiCheck);
 		 
+		 
+		 inputArea.setStyleName("textbg");
 		 
 		
 		 inputArea.addDropHandler(new DropHandler() {
@@ -327,9 +359,20 @@ public class TemplateTextGenerator implements EntryPoint {
 		return templateArea.getText();
 	}
 	public void loadTemplateText(String text) {
-		if(text==null || text.isEmpty()){
+		if(text==null ){
 			return;
 		}
+		
+		if(text.isEmpty()){//initial case
+			fileNameBox.setText("${value}.txt");
+			headerArea.setText("");
+			footerArea.setText("");
+			rowArea.setText("${value}");
+			singleBt.setValue(true);
+			multiCheck.setValue(false);
+			return;
+		}
+		
 		TemplateStoreData data=TemplateStoreDataBuilder.textToStoreData(text);
 		multiCheck.setValue(data.isMultiOutput());
 		if(data.getInputType()==TemplateStoreData.TYPE_SINGLE){
@@ -344,8 +387,10 @@ public class TemplateTextGenerator implements EntryPoint {
 		headerArea.setText(data.getHeader()==null?"":data.getHeader());
 		footerArea.setText(data.getFooter()==null?"":data.getFooter());
 		rowArea.setText(data.getRow()==null?"":data.getRow());
+		
+		fileNameBox.setEnabled(multiCheck.getValue());
 	}
-	
+	private ListDataProvider<FileNameAndText> cellListProvider=new ListDataProvider<FileNameAndText>();
 	protected void doConvert() {
 		boolean multi=multiCheck.getValue();
 		List<FileNameAndText> result=null;
@@ -364,7 +409,20 @@ public class TemplateTextGenerator implements EntryPoint {
 		}
 		
 		
-		cellList.setRowData(0, result);
+		//cellList.setRowCount(0);
+		
+		//i have no idea why old list still exist on cellList.getRowContainer()
+		//clear children.
+		int child=cellList.getRowContainer().getChildCount();
+		for(int i=child-1;i>=0;i--){//clear first
+			cellList.getRowContainer().getChild(i).removeFromParent();
+		}
+		
+		
+		LogUtils.log(cellList.asWidget());
+		
+		cellListProvider.setList(result);
+		
 		if(result.size()>0){
 			selectionModel.setSelected(result.get(0), true);
 		}
