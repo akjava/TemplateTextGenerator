@@ -20,7 +20,7 @@ public class TemplateConverter {
 		if(multiple){
 			return convertAsLineMulti(header, footer, row, input,fileName);
 		}else{
-			FileNameAndText fn=convertAsLineSingle(header, footer, row, input,"");
+			FileNameAndText fn=convertAsLineSingle(header, footer, row, input,fileName);
 			if(fn==null){
 				return new ArrayList<FileNameAndText>();
 			}else{
@@ -46,7 +46,7 @@ public class TemplateConverter {
 		if(multiple){
 			return convertAsFirstKeyMulti(header, footer, row, input,fileName);
 		}else{
-			FileNameAndText fn=convertAsFirstKeySingle(header, footer, row, input,"");
+			FileNameAndText fn=convertAsFirstKeySingle(header, footer, row, input,fileName);
 			if(fn==null){
 				return new ArrayList<FileNameAndText>();
 			}else{

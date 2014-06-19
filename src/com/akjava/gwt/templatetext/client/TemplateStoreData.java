@@ -12,6 +12,9 @@ private int inputType;
 
 private List<TemplateData> datas=new ArrayList<TemplateData>();
 
+public List<TemplateData> getDatas() {
+	return datas;
+}
 public TemplateData get(int index){
 	return datas.get(index);
 }

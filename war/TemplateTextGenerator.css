@@ -1,5 +1,18 @@
 /** Add css rules here for your application. */
 
+ .widgetList{
+	padding:1px;
+	background: #ccc;
+}
+.widgetList-default{
+	margin:4px;
+	border: 2px solid #fff;
+	background: #fff;
+}
+.widgetList-select{
+	border: 2px solid #00f;
+	background: #eee;
+}
 
 /** Example rules used by the template application (remove for your app) */
 h1 {

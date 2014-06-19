@@ -1,5 +1,6 @@
 package com.akjava.gwt.templatetext.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.akjava.gwt.html5.client.file.File;
@@ -14,13 +15,17 @@ import com.akjava.gwt.lib.client.LogUtils;
 import com.akjava.gwt.lib.client.StorageControler;
 import com.akjava.gwt.lib.client.StorageDataList;
 import com.akjava.gwt.lib.client.StorageException;
+import com.akjava.gwt.lib.client.experimental.WidgetList;
 import com.akjava.gwt.lib.client.widget.PasteValueReceiveArea;
 import com.akjava.gwt.lib.client.widget.TabInputableTextArea;
 import com.akjava.gwt.templatetext.client.TemplateStoreData.TemplateData;
+import com.google.common.base.Objects;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.editor.client.Editor;
+import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DropEvent;
@@ -31,6 +36,8 @@ import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.FocusPanel;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
@@ -50,15 +57,13 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class TemplateTextGenerator implements EntryPoint {
-
+	 interface Driver extends SimpleBeanEditorDriver< TemplateData,  TemplateDataEditor> {}
+	 Driver driver = GWT.create(Driver.class);
 
 	private static final String KEY_TEMPLATE_LAST_DATA = "TemplateTextGenerate_LAST_DATA";
 	private static final String KEY_TEMPLATE_LAST_INPUT = "TemplateTextGenerate_LAST_INPUT";
 	StorageControler storageControler=new StorageControler();
-	private TextBox fileNameBox;
-	private TextArea headerArea;
-	private TextArea footerArea;
-	private TextArea rowArea;
+
 	private TextArea templateArea;
 	private TextArea outputArea;
 	private TabInputableTextArea inputArea;
@@ -204,14 +209,49 @@ public class TemplateTextGenerator implements EntryPoint {
 	}
 	private String appName="TemplateTextGenerator";
 	private String version="v1.0";
+	
+	public class TemplateDataEditor extends VerticalPanel implements Editor<TemplateData>{
+		 TextBox fileNameEditor;
+		 TextArea headerEditor;
+		 TextArea footerEditor;
+		 TextArea rowEditor;
+		public TemplateDataEditor(){
+
+			//file name box
+			HorizontalPanel fileNamesPanel=new HorizontalPanel();
+			fileNamesPanel.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
+			this.add(fileNamesPanel);
+			fileNamesPanel.add(new Label("FileName Template"));
+			fileNameEditor = new TextBox();
+			fileNameEditor.setWidth("250px");
+			fileNamesPanel.add(fileNameEditor);
+			//header box
+			
+			headerEditor = new TextArea();
+			headerEditor.setSize("600px","150px");
+			this.add(new Label("Header Template"));
+			this.add(headerEditor);
+			
+			rowEditor = new TextArea();
+			rowEditor.setSize("600px","150px");
+			this.add(new Label("Row/Body Template"));
+			this.add(rowEditor);
+			
+			footerEditor = new TextArea();
+			footerEditor.setSize("600px","150px");
+			this.add(new Label("Footer Template"));
+			this.add(footerEditor);
+		}
+	}
+	private TemplateDataEditor dataEditor;
 	private void createLeftPanels(Panel parentPanel){
 		//copy paste box
 		PasteValueReceiveArea pasteArea=new PasteValueReceiveArea();
 		 pasteArea.setStylePrimaryName("clipbg");
 		// pasteArea.setStylePrimaryName("readonly");
-		 pasteArea.setText(appName+" "+version+"\n-- Clipboard Receiver -- \nClick(Focus) & Paste Template-Text Here");
+		 pasteArea.setText(appName+" "+version+"\t\t-- Clipboard Receiver -- \nClick(Focus) & Paste Template-Text Here");
 		 parentPanel.add(pasteArea);
-		 pasteArea.setSize("600px", "60px");
+		 pasteArea.setSize("600px", "30px");
 		 pasteArea.setFocus(true);
 		 pasteArea.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -222,30 +262,80 @@ public class TemplateTextGenerator implements EntryPoint {
 			 
 		});
 		 
-		//file name box
-		HorizontalPanel fileNamesPanel=new HorizontalPanel();
-		fileNamesPanel.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
-		parentPanel.add(fileNamesPanel);
-		fileNamesPanel.add(new Label("FileName Template"));
-		fileNameBox = new TextBox();
-		fileNameBox.setWidth("250px");
-		fileNamesPanel.add(fileNameBox);
-		//header box
+		 HorizontalPanel listPanel=new HorizontalPanel();
 		
-		headerArea = new TextArea();
-		headerArea.setSize("600px","150px");
-		parentPanel.add(new Label("Header Template"));
-		parentPanel.add(headerArea);
-		
-		rowArea = new TextArea();
-		rowArea.setSize("600px","150px");
-		parentPanel.add(new Label("Row/Body Template"));
-		parentPanel.add(rowArea);
-		
-		footerArea = new TextArea();
-		footerArea.setSize("600px","150px");
-		parentPanel.add(new Label("Footer Template"));
-		parentPanel.add(footerArea);
+		 listPanel.setWidth("100%");
+		 parentPanel.add(listPanel);
+		 
+		 templateDataListContainer = new WidgetList<TemplateData>(){
+			@Override
+			public void onSelect(TemplateData data) {
+				if(templateDataListContainer.getSelection()!=null && templateDataListContainer.getSelection()!=data){
+					driver.flush();//always flush first
+				}
+				driver.edit(data);
+			}
+
+			@Override
+			public FocusPanel createWidget(TemplateData data) {
+				FocusPanel panel=new FocusPanel();
+				int index=currentStoredata.getDatas().indexOf(data)+1;
+				Label label=new Label(""+index);
+				label.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
+				label.setWidth("40px");
+				panel.add(label);
+				
+				return panel;
+			}
+		 };
+		 templateDataListContainer.setWidth("450px");
+		 
+		 listPanel.add(templateDataListContainer);
+		 
+		 HorizontalPanel listButtons=new HorizontalPanel();
+		 //listButtons.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
+		 //listButtons.setBorderWidth(1);
+		 
+		 //listButtons.setWidth("100%");
+		 listPanel.add(listButtons);
+		 
+		 Button addBt=new Button("Add",new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				driver.flush();
+				
+				if(currentStoredata.getDatas().size()<8){//max - 8
+				TemplateData data=new TemplateData();
+				currentStoredata.add(data);
+				templateDataListContainer.updateData();
+				templateDataListContainer.select(data);
+				}
+			}
+		});
+		 listButtons.add(addBt);
+		 
+		 Button removeBt=new Button("Remove",new ClickHandler() {
+				
+				@Override
+				public void onClick(ClickEvent event) {
+					TemplateData cdata=driver.flush();
+					if(currentStoredata.getDatas().size()>1){
+					templateDataListContainer.removeData(cdata);
+					templateDataListContainer.select(currentStoredata.getDatas().get(0));
+					}
+				}
+			});
+		 listButtons.add(removeBt);
+		 
+		 
+		 
+		 //add listWidget here
+		 dataEditor=new TemplateDataEditor();
+		 dataEditor.getElement().getStyle().setBackgroundColor("#eee");
+		 parentPanel.add(dataEditor);
+		 driver.initialize(dataEditor);
+		 
 		
 		
 		
@@ -289,7 +379,8 @@ public class TemplateTextGenerator implements EntryPoint {
 
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				fileNameBox.setEnabled(event.getValue());
+				//TODO re support future
+				//fileNameBox.setEnabled(event.getValue());
 			}
 			 
 		});
@@ -365,53 +456,83 @@ public class TemplateTextGenerator implements EntryPoint {
 		}
 		
 		if(text.isEmpty()){//initial case
-			fileNameBox.setText("${value}.txt");
-			headerArea.setText("");
-			footerArea.setText("");
-			rowArea.setText("${value}");
-			singleBt.setValue(true);
-			multiCheck.setValue(false);
-			return;
+			currentStoredata=new TemplateStoreData();
+			currentStoredata.setInputType(TemplateStoreData.TYPE_SINGLE);
+			currentStoredata.setMultiOutput(false);
+			TemplateData data=new TemplateData();
+			data.setRow("${value}");
+			data.setFileName("${value}.txt");
+			data.setHeader("");
+			currentStoredata.add(data);
+		}else{
+			currentStoredata = new TemplateStoreDataConverter().reverse().convert(text);
 		}
 		
-		TemplateStoreData storedata=new TemplateStoreDataConverter().reverse().convert(text);
-		multiCheck.setValue(storedata.isMultiOutput());
-		if(storedata.getInputType()==TemplateStoreData.TYPE_SINGLE){
+		
+		//TODO should replace to editor? but i'dont know hot to multiple
+		
+		multiCheck.setValue(currentStoredata.isMultiOutput());
+		if(currentStoredata.getInputType()==TemplateStoreData.TYPE_SINGLE){
 			singleBt.setValue(true);
-		}else if(storedata.getInputType()==TemplateStoreData.TYPE_PAIR){
+		}else if(currentStoredata.getInputType()==TemplateStoreData.TYPE_PAIR){
 			pairBt.setValue(true);
-		}else if(storedata.getInputType()==TemplateStoreData.TYPE_FIRT_KEY){
+		}else if(currentStoredata.getInputType()==TemplateStoreData.TYPE_FIRT_KEY){
 			firstBt.setValue(true);
 		}
-		fileNameBox.setEnabled(multiCheck.getValue());
 		
-		if(storedata.size()>0){
-		TemplateData data=storedata.get(0);
-		fileNameBox.setText(data.getFileName()==null?"":data.getFileName());
+		//TODO future support
+		//fileNameBox.setEnabled(multiCheck.getValue());
 		
-		headerArea.setText(data.getHeader()==null?"":data.getHeader());
-		footerArea.setText(data.getFooter()==null?"":data.getFooter());
-		rowArea.setText(data.getRow()==null?"":data.getRow());
+		templateDataListContainer.setData(currentStoredata.getDatas());//update widget
+		
+		if(currentStoredata.size()>0){
+			templateDataListContainer.select(currentStoredata.get(0));
+		}else{
+			LogUtils.log("not support 0 child data");
 		}
 		
 		
 	}
 	private ListDataProvider<FileNameAndText> cellListProvider=new ListDataProvider<FileNameAndText>();
+
+	private TemplateStoreData currentStoredata;
+
+	private WidgetList<TemplateData> templateDataListContainer;
 	protected void doConvert() {
+		
+		driver.flush();//store right now;
+		
 		boolean multi=multiCheck.getValue();
+		
+		List<FileNameAndText> allFiles=new ArrayList<FileNameAndText>();
+		for(int i=0;i<currentStoredata.size();i++){
+			TemplateData data=currentStoredata.get(i);
 		List<FileNameAndText> result=null;
+		
+		String header=Objects.firstNonNull(data.getHeader(), "");
+		String row=Objects.firstNonNull(data.getRow(), "");
+		String footer=Objects.firstNonNull(data.getFooter(), "");
+		String fileName=Objects.firstNonNull(data.getFileName(), "");
+		
+		LogUtils.log("fileName:"+fileName);
 		if(singleBt.getValue()){
-			result=TemplateConverter.convertAsLine(headerArea.getText(),footerArea.getText(),rowArea.getText(),inputArea.getText(),fileNameBox.getText(),multi);
+			result=TemplateConverter.convertAsLine(header,footer,row,inputArea.getText(),fileName,multi);
 		}else if(pairBt.getValue()){
-			result=TemplateConverter.convertAsPair(headerArea.getText(),footerArea.getText(),rowArea.getText(),inputArea.getText(),fileNameBox.getText(),multi);
+			result=TemplateConverter.convertAsPair(header,footer,row,inputArea.getText(),fileName,multi);
 		}else{
-			result=TemplateConverter.convertAsFirstKey(headerArea.getText(),footerArea.getText(),rowArea.getText(),inputArea.getText(),fileNameBox.getText(),multi);
+			result=TemplateConverter.convertAsFirstKey(header,footer,row,inputArea.getText(),fileName,multi);
 		}
 		
 		for(FileNameAndText fn:result){
 			if(fn.getName().isEmpty()){
 				fn.setName("generated.txt");
 			}
+			
+			allFiles.add(fn);
+		}
+		
+		
+		
 		}
 		
 		
@@ -427,33 +548,26 @@ public class TemplateTextGenerator implements EntryPoint {
 		
 		LogUtils.log(cellList.asWidget());
 		
-		cellListProvider.setList(result);
+		cellListProvider.setList(allFiles);
 		
-		if(result.size()>0){
-			selectionModel.setSelected(result.get(0), true);
+		if(allFiles.size()>0){
+			selectionModel.setSelected(allFiles.get(0), true);
 		}
 		
-		TemplateStoreData storeData=new TemplateStoreData();
-		storeData.setMultiOutput(multiCheck.getValue());
+		
+		
+		currentStoredata.setMultiOutput(multiCheck.getValue());
 		if(singleBt.getValue()){
-			storeData.setInputType(TemplateStoreData.TYPE_SINGLE);
+			currentStoredata.setInputType(TemplateStoreData.TYPE_SINGLE);
 		}else if(pairBt.getValue()){
-			storeData.setInputType(TemplateStoreData.TYPE_PAIR);
+			currentStoredata.setInputType(TemplateStoreData.TYPE_PAIR);
 		}else{
-			storeData.setInputType(TemplateStoreData.TYPE_FIRT_KEY);
+			currentStoredata.setInputType(TemplateStoreData.TYPE_FIRT_KEY);
 		}
 		
 		
-		TemplateData data=new TemplateData();
-		storeData.add(data);
 		
-		data.setFileName(fileNameBox.getText());
-		
-		
-		data.setHeader(headerArea.getText());
-		data.setFooter(footerArea.getText());
-		data.setRow(rowArea.getText());
-		templateArea.setText(new TemplateStoreDataConverter().convert(storeData));
+		templateArea.setText(new TemplateStoreDataConverter().convert(currentStoredata));
 		try {
 			storageControler.setValue(KEY_TEMPLATE_LAST_DATA, templateArea.getText());
 			storageControler.setValue(KEY_TEMPLATE_LAST_INPUT, inputArea.getText());
