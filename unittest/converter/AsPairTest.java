@@ -136,7 +136,7 @@ public class AsPairTest extends TestCase{
 				"hello";
 		String fileName="filename";
 		FileNameAndText result=TemplateConverter.convertAsPairMulti(header,footer,row,input,fileName).get(1);
-		assertEquals("filename:"+"headerfooter",result.toString());
+		assertEquals("filename:"+"header${value}footer",result.toString());
 	}
 	
 	/**

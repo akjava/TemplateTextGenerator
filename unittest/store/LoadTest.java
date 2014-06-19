@@ -6,7 +6,8 @@ import java.net.URL;
 import junit.framework.TestCase;
 
 import com.akjava.gwt.templatetext.client.TemplateStoreData;
-import com.akjava.gwt.templatetext.client.TemplateStoreDataBuilder;
+import com.akjava.gwt.templatetext.client.TemplateStoreData.TemplateData;
+import com.akjava.gwt.templatetext.client.TemplateStoreDataConverter;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
@@ -27,7 +28,8 @@ public class LoadTest extends TestCase{
 	public void test1(){
 		String expected=loadTest("test1.txt");
 		TemplateStoreData data=new TemplateStoreData();
-		assertEquals(expected,TemplateStoreDataBuilder.toStoreText(data));
+		data.add(new TemplateData());
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
 	}
 	
 	public void test2(){
@@ -35,10 +37,13 @@ public class LoadTest extends TestCase{
 		TemplateStoreData data=new TemplateStoreData();
 		data.setMultiOutput(true);
 		data.setInputType(TemplateStoreData.TYPE_PAIR);
-		data.setFileName("test.txt");
-		data.setHeader("hello\r\nhello");
-		data.setFooter("foot toot");
-		data.setRow("rowrow");
-		assertEquals(expected,TemplateStoreDataBuilder.toStoreText(data));
+		
+		TemplateData child=new TemplateData();
+		data.add(child);
+		child.setFileName("test.txt");
+		child.setHeader("hello\r\nhello");
+		child.setFooter("foot toot");
+		child.setRow("rowrow");
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
 	}
 }

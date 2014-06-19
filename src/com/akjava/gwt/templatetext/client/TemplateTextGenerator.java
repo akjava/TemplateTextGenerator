@@ -16,6 +16,7 @@ import com.akjava.gwt.lib.client.StorageDataList;
 import com.akjava.gwt.lib.client.StorageException;
 import com.akjava.gwt.lib.client.widget.PasteValueReceiveArea;
 import com.akjava.gwt.lib.client.widget.TabInputableTextArea;
+import com.akjava.gwt.templatetext.client.TemplateStoreData.TemplateData;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
@@ -373,22 +374,27 @@ public class TemplateTextGenerator implements EntryPoint {
 			return;
 		}
 		
-		TemplateStoreData data=TemplateStoreDataBuilder.textToStoreData(text);
-		multiCheck.setValue(data.isMultiOutput());
-		if(data.getInputType()==TemplateStoreData.TYPE_SINGLE){
+		TemplateStoreData storedata=new TemplateStoreDataConverter().reverse().convert(text);
+		multiCheck.setValue(storedata.isMultiOutput());
+		if(storedata.getInputType()==TemplateStoreData.TYPE_SINGLE){
 			singleBt.setValue(true);
-		}else if(data.getInputType()==TemplateStoreData.TYPE_PAIR){
+		}else if(storedata.getInputType()==TemplateStoreData.TYPE_PAIR){
 			pairBt.setValue(true);
-		}else if(data.getInputType()==TemplateStoreData.TYPE_FIRT_KEY){
+		}else if(storedata.getInputType()==TemplateStoreData.TYPE_FIRT_KEY){
 			firstBt.setValue(true);
 		}
+		fileNameBox.setEnabled(multiCheck.getValue());
+		
+		if(storedata.size()>0){
+		TemplateData data=storedata.get(0);
 		fileNameBox.setText(data.getFileName()==null?"":data.getFileName());
 		
 		headerArea.setText(data.getHeader()==null?"":data.getHeader());
 		footerArea.setText(data.getFooter()==null?"":data.getFooter());
 		rowArea.setText(data.getRow()==null?"":data.getRow());
+		}
 		
-		fileNameBox.setEnabled(multiCheck.getValue());
+		
 	}
 	private ListDataProvider<FileNameAndText> cellListProvider=new ListDataProvider<FileNameAndText>();
 	protected void doConvert() {
@@ -427,20 +433,27 @@ public class TemplateTextGenerator implements EntryPoint {
 			selectionModel.setSelected(result.get(0), true);
 		}
 		
-		TemplateStoreData data=new TemplateStoreData();
-		data.setFileName(fileNameBox.getText());
-		data.setMultiOutput(multiCheck.getValue());
+		TemplateStoreData storeData=new TemplateStoreData();
+		storeData.setMultiOutput(multiCheck.getValue());
 		if(singleBt.getValue()){
-			data.setInputType(TemplateStoreData.TYPE_SINGLE);
+			storeData.setInputType(TemplateStoreData.TYPE_SINGLE);
 		}else if(pairBt.getValue()){
-			data.setInputType(TemplateStoreData.TYPE_PAIR);
+			storeData.setInputType(TemplateStoreData.TYPE_PAIR);
 		}else{
-			data.setInputType(TemplateStoreData.TYPE_FIRT_KEY);
+			storeData.setInputType(TemplateStoreData.TYPE_FIRT_KEY);
 		}
+		
+		
+		TemplateData data=new TemplateData();
+		storeData.add(data);
+		
+		data.setFileName(fileNameBox.getText());
+		
+		
 		data.setHeader(headerArea.getText());
 		data.setFooter(footerArea.getText());
 		data.setRow(rowArea.getText());
-		templateArea.setText(TemplateStoreDataBuilder.toStoreText(data));
+		templateArea.setText(new TemplateStoreDataConverter().convert(storeData));
 		try {
 			storageControler.setValue(KEY_TEMPLATE_LAST_DATA, templateArea.getText());
 			storageControler.setValue(KEY_TEMPLATE_LAST_INPUT, inputArea.getText());

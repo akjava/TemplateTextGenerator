@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 
 import com.akjava.gwt.templatetext.client.TemplateStoreData;
 import com.akjava.gwt.templatetext.client.TemplateStoreDataBuilder;
+import com.akjava.gwt.templatetext.client.TemplateStoreDataConverter;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
@@ -26,18 +27,18 @@ public class StoreTest extends TestCase{
 	
 	public void test1(){
 		String expected=loadTest("test1.txt");
-		TemplateStoreData data=TemplateStoreDataBuilder.textToStoreData(expected);
-		assertEquals(expected,TemplateStoreDataBuilder.toStoreText(data));
+		TemplateStoreData data=new TemplateStoreDataConverter().reverse().convert(expected);
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
 	}
 	
 	public void test2(){
 		String expected=loadTest("test2.txt");
-		TemplateStoreData data=TemplateStoreDataBuilder.textToStoreData(expected);
-		assertEquals(expected,TemplateStoreDataBuilder.toStoreText(data));
+		TemplateStoreData data=new TemplateStoreDataConverter().reverse().convert(expected);
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
 	}
 	public void test3(){
 		String expected=loadTest("test3.txt");
-		TemplateStoreData data=TemplateStoreDataBuilder.textToStoreData(expected);
-		assertEquals(expected,TemplateStoreDataBuilder.toStoreText(data));
+		TemplateStoreData data=new TemplateStoreDataConverter().reverse().convert(expected);
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
 	}
 }
