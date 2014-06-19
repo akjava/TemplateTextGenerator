@@ -46,4 +46,45 @@ public class LoadTest extends TestCase{
 		child.setRow("rowrow");
 		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
 	}
+	
+	//multiple empty
+	public void test4(){
+		String expected=loadTest("test4.txt");
+		TemplateStoreData data=new TemplateStoreData();
+		data.add(new TemplateData());
+		data.add(new TemplateData());
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
+	}
+	
+	public void test5(){
+		String expected=loadTest("test5.txt");
+		TemplateStoreData data=new TemplateStoreData();
+		data.setMultiOutput(true);
+		data.setInputType(TemplateStoreData.TYPE_SINGLE);
+		for(int i=1;i<=3;i++){
+		TemplateData child=new TemplateData();
+		data.add(child);
+		child.setFileName(i+".txt");
+		child.setHeader("head"+i);
+		child.setFooter("foot"+i);
+		child.setRow("row"+i);
+		}
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
+	}
+	
+	public void test6(){
+		String expected=loadTest("test6.txt");
+		TemplateStoreData data=new TemplateStoreData();
+		data.setMultiOutput(true);
+		data.setInputType(TemplateStoreData.TYPE_SINGLE);
+		for(int i=1;i<=3;i++){
+		TemplateData child=new TemplateData();
+		data.add(child);
+		//child.setFileName(i+".txt");
+		//child.setHeader("head"+i);
+		//child.setFooter("foot"+i);
+		child.setRow("row"+i);
+		}
+		assertEquals(expected,new TemplateStoreDataConverter().convert(data));
+	}
 }

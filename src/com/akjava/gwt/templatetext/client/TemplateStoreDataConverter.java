@@ -3,6 +3,7 @@ package com.akjava.gwt.templatetext.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.akjava.gwt.lib.client.LogUtils;
 import com.akjava.gwt.templatetext.client.TemplateStoreData.TemplateData;
 import com.akjava.lib.common.utils.CSVUtils;
 import com.akjava.lib.common.utils.ValuesUtils;
@@ -32,6 +33,12 @@ public class TemplateStoreDataConverter extends Converter<TemplateStoreData,Stri
 				int input=ValuesUtils.toInt(line.substring(META_INPUT.length()), 0);
 				result.setInputType(input);
 			}else if(line.startsWith(META_FILENAME)){
+				if(tmp!=null && lastMeta!=null){
+					textToStoreDataSetValue(data,lastMeta,tmp);
+					tmp=null;
+				}
+				lastMeta=null;
+				
 				String name=line.substring(META_FILENAME.length());
 				
 				data=new TemplateData();
@@ -87,6 +94,9 @@ public class TemplateStoreDataConverter extends Converter<TemplateStoreData,Stri
 		values.add(META_ROW);
 		values.add(data.getRow()==null?"":data.getRow());
 		}
+		
+		System.out.println(Joiner.on("\r\n").join(values));
+		
 		return Joiner.on("\r\n").join(values);
 	}
 	

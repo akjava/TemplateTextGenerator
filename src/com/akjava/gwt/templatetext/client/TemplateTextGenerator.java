@@ -270,9 +270,9 @@ public class TemplateTextGenerator implements EntryPoint {
 		 templateDataListContainer = new WidgetList<TemplateData>(){
 			@Override
 			public void onSelect(TemplateData data) {
-				if(templateDataListContainer.getSelection()!=null && templateDataListContainer.getSelection()!=data){
-					driver.flush();//always flush first
-				}
+				
+				driver.flush();//always flush first
+				
 				driver.edit(data);
 			}
 
@@ -336,7 +336,7 @@ public class TemplateTextGenerator implements EntryPoint {
 		 parentPanel.add(dataEditor);
 		 driver.initialize(dataEditor);
 		 
-		
+		 driver.edit(new TemplateData());//for dummy when new-data was setted,flush() called,so need dummy.
 		
 		
 		//button
