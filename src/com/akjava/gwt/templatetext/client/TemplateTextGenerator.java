@@ -206,6 +206,7 @@ public class TemplateTextGenerator implements EntryPoint {
 		helps.add(new Label("${name+value}:name only of fileName"));
 		helps.add(new Label("${ext+value}: ext only of fileName"));
 		helps.add(new Label("${_+value}: replace ' ' & '-' to underbar"));
+		helps.add(new Label("${C+value}:underbar to upper camel(Beta)"));
 	}
 	private String appName="TemplateTextGenerator";
 	private String version="v1.0";
