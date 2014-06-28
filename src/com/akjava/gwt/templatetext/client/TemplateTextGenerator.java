@@ -349,7 +349,7 @@ public class TemplateTextGenerator implements EntryPoint {
 			});
 		 parentPanel.add(convert);
 		 
-		 parentPanel.add(new Label("Input"));
+		 parentPanel.add(new Label("Input(every template layer use same input)"));
 		 
 		 HorizontalPanel hpanel=new HorizontalPanel();
 		 parentPanel.add(hpanel);

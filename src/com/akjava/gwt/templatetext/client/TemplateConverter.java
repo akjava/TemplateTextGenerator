@@ -33,7 +33,7 @@ public class TemplateConverter {
 		if(multiple){
 			return convertAsPairMulti(header, footer, row, input,fileName);
 		}else{
-			FileNameAndText fn=convertAsPairSingle(header, footer, row, input,"");
+			FileNameAndText fn=convertAsPairSingle(header, footer, row, input,fileName);
 			if(fn==null){
 				return new ArrayList<FileNameAndText>();
 			}else{
