@@ -2,6 +2,7 @@ package com.akjava.gwt.templatetext.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.akjava.gwt.html5.client.file.File;
 import com.akjava.gwt.html5.client.file.FileUtils;
@@ -19,7 +20,12 @@ import com.akjava.gwt.lib.client.experimental.WidgetList;
 import com.akjava.gwt.lib.client.widget.PasteValueReceiveArea;
 import com.akjava.gwt.lib.client.widget.TabInputableTextArea;
 import com.akjava.gwt.templatetext.client.TemplateStoreData.TemplateData;
+import com.akjava.lib.common.utils.TemplateUtils;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
@@ -37,7 +43,6 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FocusPanel;
-import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
@@ -347,7 +352,43 @@ public class TemplateTextGenerator implements EntryPoint {
 					doConvert();
 				}
 			});
-		 parentPanel.add(convert);
+		 HorizontalPanel mainButtons=new HorizontalPanel();
+		 parentPanel.add(mainButtons);
+		 mainButtons.add(convert);
+		 convert.setWidth("100px");
+		 
+		 Button autoKey=new Button("auto make keys",new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				List<String> texts=new ArrayList<String>();
+				for(int i=0;i<currentStoredata.size();i++){
+					TemplateData data=currentStoredata.get(i);
+					texts.add(data.getHeader());
+					texts.add(data.getFooter());
+					texts.add(data.getRow());
+					texts.add(data.getFileName());
+				}
+				String text=Joiner.on("\n").skipNulls().join(texts);
+				Set<String> keys=TemplateUtils.findTemplateKeys(text);
+				
+				if(pairBt.getValue()){
+					String newText=Joiner.on("\n").join(FluentIterable.from(keys).transform(new Function<String,String>(){
+						@Override
+						public String apply(String value) {
+							return value+"\t"+"DUMMY";
+						}
+						
+					}));
+					inputArea.setText(newText);
+				}else if(firstBt.getValue()){
+					String dummy=Strings.repeat("DUMMY\t", keys.size());
+					inputArea.setText(Joiner.on("\t").join(keys)+"\n"+dummy);
+				}
+				
+			}
+		});
+		 
+		 mainButtons.add(autoKey);
 		 
 		 parentPanel.add(new Label("Input(every template layer use same input)"));
 		 
