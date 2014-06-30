@@ -56,7 +56,9 @@ private FileUploadForm uploadForm;
 	@Override
 	public void loadData(Optional<SimpleTextData> hv) {
 		if(hv.isPresent()){
-			LogUtils.log(hv.get().getData());
+			//add url
+			
+			generator.setUrl(hv.get().getId());
 			generator.loadTemplateText(hv.get().getData());
 			generator.doConvert();
 		}

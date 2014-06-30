@@ -2,6 +2,7 @@ package com.akjava.gwt.templatetext.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.akjava.gwt.html5.client.file.File;
@@ -16,6 +17,7 @@ import com.akjava.gwt.lib.client.LogUtils;
 import com.akjava.gwt.lib.client.StorageControler;
 import com.akjava.gwt.lib.client.StorageDataList;
 import com.akjava.gwt.lib.client.StorageException;
+import com.akjava.gwt.lib.client.URLUtils;
 import com.akjava.gwt.lib.client.experimental.WidgetList;
 import com.akjava.gwt.lib.client.widget.PasteValueReceiveArea;
 import com.akjava.gwt.lib.client.widget.TabInputableTextArea;
@@ -26,6 +28,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.primitives.Ints;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
@@ -40,6 +43,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FocusPanel;
@@ -81,6 +85,11 @@ public class TemplateTextGenerator implements EntryPoint {
 	private CheckBox multiCheck;
 	VerticalPanel downloadLinks=new VerticalPanel();
 	private TemplateDataList templateDataList;
+	
+	public void setUrl(int id){
+		History.newItem("id="+id);
+	}
+	
 	public void onModuleLoad() {
 		HorizontalPanel root=new HorizontalPanel();
 		RootPanel.get().add(root);
@@ -146,6 +155,16 @@ public class TemplateTextGenerator implements EntryPoint {
 		 templateDataList = new TemplateDataList(new StorageDataList(storageControler,"templateText"),this);
 		 
 		 root.add(templateDataList.getSimpleDataListWidget());
+		 
+		
+		 	Map<String,List<String>> tokens=URLUtils.parseToken(History.getToken(), true);
+			String value=URLUtils.getFirstValue(tokens,"id");
+			if(!Strings.isNullOrEmpty(value)){
+				int id=Integer.parseInt(value);
+				if(id>=0){
+					templateDataList.selectById(id);
+				}
+			}
 		
 	}
 	private void createRightPanels(Panel parentPanel) {
