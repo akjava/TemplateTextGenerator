@@ -1,6 +1,8 @@
 package com.akjava.gwt.templatetext.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +25,7 @@ import com.akjava.gwt.lib.client.widget.PasteValueReceiveArea;
 import com.akjava.gwt.lib.client.widget.TabInputableTextArea;
 import com.akjava.gwt.templatetext.client.TemplateStoreData.TemplateData;
 import com.akjava.lib.common.utils.TemplateUtils;
+import com.akjava.lib.common.utils.TemplateUtils.TemplateKey;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
@@ -376,7 +379,7 @@ public class TemplateTextGenerator implements EntryPoint {
 		 mainButtons.add(convert);
 		 convert.setWidth("100px");
 		 
-		 Button autoKey=new Button("auto make keys",new ClickHandler() {
+		 Button autoKey=new Button("auto make keys from data",new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				List<String> texts=new ArrayList<String>();
@@ -390,8 +393,14 @@ public class TemplateTextGenerator implements EntryPoint {
 				String text=Joiner.on("\n").skipNulls().join(texts);
 				Set<String> keys=TemplateUtils.findTemplateKeys(text);
 				
+				Set<String> keyOnly=new HashSet<String>();
+				for(String key:keys){
+					TemplateKey tk=TemplateUtils.labelToTemplateKey(key);
+					keyOnly.add(tk.getKey());
+				}
+				
 				if(pairBt.getValue()){
-					String newText=Joiner.on("\n").join(FluentIterable.from(keys).transform(new Function<String,String>(){
+					String newText=Joiner.on("\n").join(FluentIterable.from(keyOnly).transform(new Function<String,String>(){
 						@Override
 						public String apply(String value) {
 							return value+"\t"+"DUMMY";
@@ -400,12 +409,13 @@ public class TemplateTextGenerator implements EntryPoint {
 					}));
 					inputArea.setText(newText);
 				}else if(firstBt.getValue()){
-					String dummy=Strings.repeat("DUMMY\t", keys.size());
-					inputArea.setText(Joiner.on("\t").join(keys)+"\n"+dummy);
+					String dummy=Strings.repeat("DUMMY\t", keyOnly.size());
+					inputArea.setText(Joiner.on("\t").join(keyOnly)+"\n"+dummy);
 				}
 				
 			}
 		});
+		 autoKey.setTitle("no effect from current editing before convert");
 		 
 		 mainButtons.add(autoKey);
 		 
